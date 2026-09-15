@@ -1,0 +1,17 @@
+# Generated run outputs (contain live subscription IDs, contacts, local paths)
+azure-support-results-*.json
+azure-support-results-*.email.txt
+azure-support-log-*.log
+ingestion-plan-*.json
+
+# ...but keep the curated, sanitized sample outputs
+!samples/
+!samples/**
+
+# The customer's real, filled-in settings (commit the template, not live values)
+customer/azure-support-settings.local.txt
+
+# OS / editor cruft
+Thumbs.db
+.DS_Store
+*.tmp

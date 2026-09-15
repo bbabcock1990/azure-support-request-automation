@@ -1,0 +1,66 @@
+# =====================================================================
+#  AZURE SUPPORT REQUESTS - fill in the blanks, then run the tool.
+# =====================================================================
+#  - Edit the value after each colon.  Lines starting with # are notes.
+#  - Only three things are required: WHO you are (Section 1),
+#    WHICH subscription/region (Section 2), and WHAT you need (Section 3).
+#  - Delete or comment-out (add a leading #) any need you don't want.
+# =====================================================================
+
+
+# --- SECTION 1:  WHO TO CONTACT  -------------------------------------
+Contact name:    Jane Doe
+Contact email:   jane@contoso.com
+Country:         USA
+Contact method:  email                # email or phone
+Language:        en-US
+Time zone:       Central Standard Time
+Severity:        moderate             # minimal, moderate, or critical
+
+
+# --- SECTION 2:  WHICH SUBSCRIPTION & REGION  ------------------------
+Environment:     Prod
+Subscription:    00000000-0000-0000-0000-000000000000
+Region:          East US
+Deployment:      Prod                 # short name for this workload
+Business impact: This is holding up a customer deployment and impacting revenue.
+# Customer name is auto-derived from your Contact email domain
+# (e.g. jane@contoso.com -> "Contoso").  Uncomment to override:
+# Customer:      Contoso
+
+
+# --- SECTION 3:  WHAT YOU NEED  --------------------------------------
+# Each line below is one support request. Delete the lines you don't need.
+
+# 3a. vCPU quota - list "family=TotalvCPUs" (only the shortfall is requested):
+computeQuota:      standardESv5Family=2500, standardDSv5Family=2500, standardEDSv5Family=2500, standardDDSv5Family=2500
+computeQuota notes: Remove restriction for creating new capacity reservations across all three availability zones.
+
+# 3b. Spot / low-priority vCPU quota:
+spotQuota:         lowPriorityCores=5000
+
+# 3c. GPU vCPU quota:
+gpuQuota:          standardNCASv3_T4Family=256
+
+# 3d. Zonal access (SKU x zone whitelisting) - just list the families and zones.
+#     vCPU numbers are inherited from the quota lines above; no numbers needed here.
+zonalWhitelisting: standardESv5Family, standardDSv5Family, standardEDSv5Family, standardDDSv5Family, standardNCASv3_T4Family
+zonalWhitelisting notes: Remove restriction for creating new capacity reservations across all three availability zones.
+Zones:             1, 2, 3
+
+# 3e. Other needs that take no numbers (comma-separated):
+Needs:             haPostgres         # e.g. haPostgres, allocationBlock
+
+
+# =====================================================================
+#  NEED A SECOND SUBSCRIPTION OR REGION?
+#  Copy the block below, remove the leading "# " from each line, and edit.
+# =====================================================================
+# Environment:     Second-Environment
+# Subscription:    00000000-0000-0000-0000-000000000000
+# Region:          East US 2
+# Deployment:      Dev
+# Business impact: Describe the customer impact here.
+# computeQuota:    standardDSv5Family=1000
+# gpuQuota:        standardNCASv3_T4Family=64
+# Needs:           haPostgres
