@@ -1,9 +1,9 @@
 # Azure Support Request (SR) automation
 
-A common complaint from large Azure customers is having to open a separate support
-ticket for
-everything (quota, spot, zonal whitelisting, allocation blocks, ...). This tool
-turns that into **one file to fill out + one command to run**.
+Large Azure customers often need several support requests at once — quota, spot,
+zonal whitelisting, allocation blocks, and more. This tool brings them together
+into **one file to fill out + one command to run**, so a batch of related requests
+goes out in a single, consistent pass.
 
 The whole tool is really just **two files**: the settings file you edit and the
 engine that reads it. The engine holds **no customer-specific values** — every
