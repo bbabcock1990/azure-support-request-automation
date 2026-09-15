@@ -14,26 +14,16 @@ request type maps to), which is identical for everyone.
 
 ## Folder layout
 
-The tool is split by audience — **customers** who open the support requests, and the
-**Microsoft account team** who turn the hand-off into MSX records:
+Everything the customer needs lives in a single **`customer\`** folder:
 
 ```
-azure-support-srs\
-├─ README.md            <- this guide (covers both sides)
-├─ customer\            <- give this folder to the customer
-│  ├─ azure-support-settings.txt        (the only file the customer edits)
-│  ├─ Create-AzureSupportRequests.ps1   (the engine)
-│  └─ run-azure-support-requests.cmd    (double-click to run)
-├─ account-team\        <- Microsoft account team / CSAM only
-│  ├─ Ingest-SupportEmail.ps1           (builds the dry-run MSX plan)
-│  ├─ Ingest-DropUI.ps1 / .cmd          (drag-and-drop window)
-│  ├─ INGEST-RUNBOOK.md                 (procedure Copilot follows)
-│  └─ launchers\                        (auto-created; safe to clear out)
-└─ samples\             <- example hand-off + plan for testing the UI
+azure-support-request-automation\
+├─ README.md            <- this guide
+└─ customer\            <- give this folder to the customer
+   ├─ azure-support-settings.txt        (the only file the customer edits)
+   ├─ Create-AzureSupportRequests.ps1   (the engine)
+   └─ run-azure-support-requests.cmd    (double-click to run)
 ```
-
-> Customers only need the **`customer\`** folder. Everything in **`account-team\`**
-> is internal to Microsoft and requires the `msx-mcp` tooling.
 
 ### `customer\` — what the customer runs
 
@@ -45,15 +35,6 @@ azure-support-srs\
 | `azure-support-results-*.json` | — | Structured results (incl. created ticket IDs) written into `customer\` on every run. |
 | `azure-support-results-*.email.txt` | — | Escalation-ready email (per-SR detail for a Microsoft CSAM / account team), written on every run. Send this to your account team. |
 | `azure-support-log-*.log` | — | Full timestamped run log written on every run. |
-
-### `account-team\` — Microsoft account team only
-
-| File | Purpose |
-|------|---------|
-| `Ingest-SupportEmail.ps1` | Reads a hand-off file and builds a dry-run MSX **ingestion plan** (1 opportunity + 1 Blocked milestone per SR + a Non-AI UAT per capacity SR). Writes nothing to MSX. |
-| `Ingest-DropUI.ps1` / `Ingest-DropUI.cmd` | Drag-and-drop window: drop the hand-off file, it builds the plan and offers to launch an interactive Copilot session that creates the milestones/UATs (with a confirmation prompt per write). Double-click the `.cmd`. |
-| `INGEST-RUNBOOK.md` | The step-by-step procedure the launched Copilot session follows to create the opportunity, milestones, and UATs via the msx-mcp tools. |
-| `launchers\` | Auto-created. Holds the tiny generated `_run-ingest-*.cmd` launchers the drop UI writes to start the interactive Copilot session. Safe to clear out. |
 
 > **Advanced / override:** the built-in Azure catalog can be overridden without
 > touching the engine — drop a `azure-support-catalog.json` next to
@@ -85,40 +66,6 @@ azure-support-srs\
 
 You never need to know Azure service names or problem-classification names — the
 built-in catalog handles that.
-
-## Handing off to the Microsoft account team (MSX ingestion)
-
-There are two sides to this workflow:
-
-- **Customer side** (`customer\Create-AzureSupportRequests.ps1`): opens the Azure support
-  requests and produces the hand-off (`azure-support-results-*.json` +
-  `*.email.txt`). Send both files to your Microsoft account team.
-- **Account-team side** (`account-team\Ingest-DropUI.cmd` / `Ingest-SupportEmail.ps1`): turns the
-  hand-off into MSX records — **one opportunity, one Blocked engagement milestone per
-  support request** (with the exact SR number recorded for traceability), and a
-  **Non-AI Capacity UAT** for each capacity request. Technical requests (e.g.
-  PostgreSQL HA) get a milestone but no UAT. **ACR/consumption is never written.**
-
-### How the account team runs it
-
-1. **Double-click `account-team\Ingest-DropUI.cmd`** and drop the customer's
-   `azure-support-results-*.json` (or `*.email.txt`) onto the window.
-2. The tool builds a **dry-run ingestion plan** (`ingestion-plan-*.json`), shows it,
-   and opens it for review. **Nothing is written to MSX yet.**
-3. Choose **Yes** to launch an interactive Copilot session (`copilot -i`). Copilot
-   follows `INGEST-RUNBOOK.md` and creates the opportunity, milestones, and UATs via
-   the **msx-mcp** tools — **prompting you to confirm every single write.**
-
-> The msx-mcp write tools and their confirmation prompts only exist inside the Copilot
-> agent runtime, so the drop window itself never writes to MSX — it launches Copilot to
-> do the writes under your confirmation. You can also run the planner directly:
-> `account-team\Ingest-SupportEmail.ps1 -InputFile <hand-off>` (add `-OpportunityId <guid>` to attach
-> to an existing opportunity instead of creating a new one).
-
-**Prerequisites (account-team side):** the `msx-mcp` MCP server (corporate VPN + MSX
-auth) and the GitHub Copilot CLI (`copilot`) on PATH.
-
-
 
 Every quota need you list is **delta-checked** before a ticket is opened:
 

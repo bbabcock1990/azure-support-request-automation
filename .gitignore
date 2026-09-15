@@ -15,3 +15,7 @@ customer/azure-support-settings.local.txt
 Thumbs.db
 .DS_Store
 *.tmp
+
+# Internal-only (Microsoft account team / MSX ingestion) - not published
+account-team/
+samples/
