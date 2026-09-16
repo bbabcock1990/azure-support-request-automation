@@ -157,6 +157,7 @@ line. Delete any need line you don't want.
 # --- SECTION 1:  WHO TO CONTACT ---
 Contact name:    Jane Doe
 Contact email:   jane@contoso.com
+# Additional emails: dave@contoso.com, team@contoso.com
 Country:         USA
 Contact method:  email                # email or phone
 Language:        en-US
@@ -196,6 +197,7 @@ requested (minus anything the delta check finds is already satisfied).
 | Line | Meaning |
 |------|---------|
 | `Contact name:` / `Contact email:` | Who Support contacts (put these once, at the top). The **Customer name is auto-derived from the Contact email domain** (e.g. `jane@contoso.com` → "Contoso") unless you set an explicit `Customer:` line. |
+| `Additional emails:` | **Optional.** Comma-separated list of extra addresses to CC on every ticket (e.g. `dave@contoso.com, team@contoso.com`), so escalation owners are notified automatically. Omit the line and only the primary contact is notified. |
 | `Country:` / `Contact method:` / `Language:` / `Time zone:` | Optional contact details (sensible defaults applied). |
 | `Severity:` | Optional default severity for every ticket (`minimal`/`moderate`/`critical`). |
 | `Environment:` | Starts a new block; the text after it is just a label for your logs. |

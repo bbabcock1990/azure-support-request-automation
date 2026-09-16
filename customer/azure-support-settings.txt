@@ -11,6 +11,7 @@
 # --- SECTION 1:  WHO TO CONTACT  -------------------------------------
 Contact name:    Jane Doe
 Contact email:   jane@contoso.com
+# Additional emails: dave@contoso.com, team@contoso.com   # optional - CC'd on every ticket
 Country:         USA
 Contact method:  email                # email or phone
 Language:        en-US
