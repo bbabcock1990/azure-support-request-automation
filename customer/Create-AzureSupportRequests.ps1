@@ -599,6 +599,7 @@ function New-ContactDetails {
         firstName = Get-RequiredString $contact "firstName" "contact"
         lastName = Get-RequiredString $contact "lastName" "contact"
         primaryEmailAddress = Get-RequiredString $contact "primaryEmailAddress" "contact"
+        additionalEmailAddresses = @(@($contact.additionalEmailAddresses) | ForEach-Object { [string]$_ } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
         country = if ($contact.country) { $contact.country } else { "USA" }
         preferredContactMethod = if ($contact.preferredContactMethod) { $contact.preferredContactMethod } else { "email" }
         preferredSupportLanguage = if ($contact.preferredSupportLanguage) { $contact.preferredSupportLanguage } else { "en-US" }
@@ -940,6 +941,10 @@ function ConvertFrom-SettingsText {
                 "contact name"  { $p = @($val -split '\s+'); if ($p.Count -ge 1) { $contact.firstName = ($p[0..([Math]::Max(0,$p.Count-2))] -join ' ') }; if ($p.Count -ge 2) { $contact.lastName = $p[-1] } }
                 "contact email" { $contact.primaryEmailAddress = $val }
                 "email"         { $contact.primaryEmailAddress = $val }
+                "additional emails" { $contact.additionalEmailAddresses = @($val -split '[,;]' | ForEach-Object { $_.Trim() } | Where-Object { $_ }) }
+                "additional email"  { $contact.additionalEmailAddresses = @($val -split '[,;]' | ForEach-Object { $_.Trim() } | Where-Object { $_ }) }
+                "cc emails"     { $contact.additionalEmailAddresses = @($val -split '[,;]' | ForEach-Object { $_.Trim() } | Where-Object { $_ }) }
+                "cc"            { $contact.additionalEmailAddresses = @($val -split '[,;]' | ForEach-Object { $_.Trim() } | Where-Object { $_ }) }
                 "country"       { $contact.country = $val }
                 "contact method"{ $contact.preferredContactMethod = $val }
                 "method"        { $contact.preferredContactMethod = $val }
@@ -1084,6 +1089,9 @@ function ConvertTo-SettingsText {
     $c = $Settings.contact
     $L.Add("Contact name:    $(("$($c.firstName) $($c.lastName)").Trim())")
     $L.Add("Contact email:   $($c.primaryEmailAddress)")
+    if ($c.additionalEmailAddresses -and @($c.additionalEmailAddresses).Count -gt 0) {
+        $L.Add("Additional emails: $((@($c.additionalEmailAddresses) | ForEach-Object { [string]$_ }) -join ', ')")
+    }
     if ($c.country)                  { $L.Add("Country:         $($c.country)") }
     if ($c.preferredContactMethod)   { $L.Add("Contact method:  $($c.preferredContactMethod)") }
     if ($c.preferredSupportLanguage) { $L.Add("Language:        $($c.preferredSupportLanguage)") }
@@ -1173,6 +1181,8 @@ function Invoke-SettingsWizard {
     $firstName = Read-HostDefault "First name" ""
     $lastName = Read-HostDefault "Last name" ""
     $email = Read-HostDefault "Contact email" ""
+    $additionalEmailsRaw = Read-HostDefault "Additional emails to CC (optional, comma-separated)" ""
+    $additionalEmails = @($additionalEmailsRaw -split '[,;]' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
     $timeZone = Read-HostDefault "Preferred time zone" "Central Standard Time"
 
     Write-Host ""
@@ -1245,6 +1255,7 @@ function Invoke-SettingsWizard {
             firstName = $firstName
             lastName = $lastName
             primaryEmailAddress = $email
+            additionalEmailAddresses = $additionalEmails
             country = "USA"
             preferredContactMethod = "email"
             preferredSupportLanguage = "en-US"
@@ -1772,6 +1783,10 @@ function Submit-Ticket {
         "--output", "json"
     ) + $quotaArgs
 
+    if (@($ContactDetails.additionalEmailAddresses).Count -gt 0) {
+        $createArgs += @("--contact-additional-emails") + @($ContactDetails.additionalEmailAddresses)
+    }
+
     try {
         $response = Invoke-AzCliJson $createArgs
     }
@@ -1902,6 +1917,9 @@ else {
 Write-Log "Resolving contact details" "INFO"
 $contactDetails = New-ContactDetails -Config $config
 Write-Log "Contact: $($contactDetails.firstName) $($contactDetails.lastName) <$($contactDetails.primaryEmailAddress)>" "INFO"
+if (@($contactDetails.additionalEmailAddresses).Count -gt 0) {
+    Write-Log "Also notified (CC): $($contactDetails.additionalEmailAddresses -join ', ')" "INFO"
+}
 $results = New-Object System.Collections.Generic.List[object]
 
 # Expand settings + catalog into a flat list of tickets (one SR per enabled need).
@@ -2148,6 +2166,7 @@ if ($emailRows.Count -gt 0) {
     $E.Add("================================================================")
     $E.Add("Prepared:        $nowStr")
     $E.Add("Prepared by:     $preparedBy")
+    if (@($contactDetails.additionalEmailAddresses).Count -gt 0) { $E.Add("CC:              $($contactDetails.additionalEmailAddresses -join ', ')") }
     if ($customers.Count -gt 0) { $E.Add("Customer:        $($customers -join ', ')") }
     $E.Add("Cloud:           AzureCloud (Azure Commercial)")
     $E.Add("Subscription(s): $($subForEmail -join ', ')")
